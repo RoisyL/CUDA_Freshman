@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "freshman.h"
 
-
+// 主机端函数，用于在 CPU 上进行数组求和
 void sumArrays(float * a,float * b,float * res,const int size)
 {
   for(int i=0;i<size;i+=4)
@@ -13,17 +13,25 @@ void sumArrays(float * a,float * b,float * res,const int size)
     res[i+3]=a[i+3]+b[i+3];
   }
 }
+// 核函数，用于在 GPU 上进行数组求和
 __global__ void sumArraysGPU(float*a,float*b,float*res)
 {
   //int i=threadIdx.x;
+  // blockIdx.x 表示当前线程块的索引（每个线程块在网格中的编号）
+  // blockDim.x 表示每个线程块中的线程数
+  // threadIdx.x 表示当前线程在线程块内的索引
+  // 通过这种方式，我们可以计算出每个线程在全局数组中的索引
   int i=blockIdx.x*blockDim.x+threadIdx.x;
   res[i]=a[i]+b[i];
 }
+
 int main(int argc,char **argv)
 {
+  // 设备选择和设置
   int dev = 0;
   cudaSetDevice(dev);
 
+  // 内存分配
   int nElem=1<<14;
   printf("Vector size:%d\n",nElem);
   int nByte=sizeof(float)*nElem;
@@ -39,12 +47,15 @@ int main(int argc,char **argv)
   CHECK(cudaMalloc((float**)&b_d,nByte));
   CHECK(cudaMalloc((float**)&res_d,nByte));
 
+  // 数据初始化
   initialData(a_h,nElem);
   initialData(b_h,nElem);
 
+  // 数据传输
   CHECK(cudaMemcpy(a_d,a_h,nByte,cudaMemcpyHostToDevice));
   CHECK(cudaMemcpy(b_d,b_h,nByte,cudaMemcpyHostToDevice));
 
+  // 核函数配置和调用
   dim3 block(1024);
   dim3 grid(nElem/block.x);
   sumArraysGPU<<<grid,block>>>(a_d,b_d,res_d);
@@ -53,11 +64,13 @@ int main(int argc,char **argv)
   CHECK(cudaMemcpy(res_from_gpu_h,res_d,nByte,cudaMemcpyDeviceToHost));
   sumArrays(a_h,b_h,res_h,nElem);
 
+  // 结果验证
   checkResult(res_h,res_from_gpu_h,nElem);
+
+  // 内存释放
   cudaFree(a_d);
   cudaFree(b_d);
   cudaFree(res_d);
-
   free(a_h);
   free(b_h);
   free(res_h);

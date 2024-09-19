@@ -1,5 +1,6 @@
 #ifndef FRESHMAN_H
 #define FRESHMAN_H
+// 封装了对 CUDA API 调用的错误检查
 #define CHECK(call)\
 {\
   const cudaError_t error=call;\
@@ -38,6 +39,7 @@ int gettimeofday(struct timeval *tp, void *tzp)
   return (0);
 }
 #endif
+// 用于获取当前的CPU时间并转换为浮点数
 double cpuSecond()
 {
   struct timeval tp;
@@ -45,6 +47,7 @@ double cpuSecond()
   return((double)tp.tv_sec+(double)tp.tv_usec*1e-6);
 
 }
+// 用于初始化浮点数组 ip，其大小为 size
 void initialData(float* ip,int size)
 {
   time_t t;
@@ -87,6 +90,7 @@ void initDevice(int devNum)
   CHECK(cudaSetDevice(dev));
 
 }
+// 用于验证 CPU 和 GPU 计算结果是否一致
 void checkResult(float * hostRef,float * gpuRef,const int N)
 {
   double epsilon=1.0E-8;

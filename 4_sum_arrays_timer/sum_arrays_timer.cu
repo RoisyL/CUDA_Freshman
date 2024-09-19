@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include "freshman.h"
 
-
-
 void sumArrays(float * a,float * b,float * res,const int size)
 {
   for(int i=0;i<size;i+=4)
@@ -51,13 +49,14 @@ int main(int argc,char **argv)
 
   //timer
   double iStart,iElaps;
-  iStart=cpuSecond();
+  // 获取当前时间（以秒为单位），存储在 iStart 中
+  iStart=cpuSecond(); 
+  // 调用核函数
   sumArraysGPU<<<grid,block>>>(a_d,b_d,res_d,nElem);
   
-  
-
   CHECK(cudaMemcpy(res_from_gpu_h,res_d,nByte,cudaMemcpyDeviceToHost));
-  iElaps=cpuSecond()-iStart;
+  // 再次调用 cpuSecond() 函数，获取当前时间，并计算经过的时间，存储在 iElaps 中
+  iElaps=cpuSecond()-iStart;  
   printf("Execution configuration<<<%d,%d>>> Time elapsed %f sec\n",grid.x,block.x,iElaps);
   sumArrays(a_h,b_h,res_h,nElem);
 

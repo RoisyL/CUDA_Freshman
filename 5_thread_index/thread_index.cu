@@ -2,10 +2,12 @@
 #include <stdio.h>
 #include "freshman.h"
 
+// 打印线程索引
 __global__ void printThreadIndex(float *A,const int nx,const int ny)
 {
   int ix=threadIdx.x+blockIdx.x*blockDim.x;
   int iy=threadIdx.y+blockIdx.y*blockDim.y;
+  // 规定线性位置的计算方法
   unsigned int idx=iy*nx+ix;
   printf("thread_id(%d,%d) block_id(%d,%d) coordinate(%d,%d)"
           "global index %2d ival %f\n",threadIdx.x,threadIdx.y,
